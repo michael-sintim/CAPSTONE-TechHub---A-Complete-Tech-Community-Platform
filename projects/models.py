@@ -1,26 +1,42 @@
 from django.db import models
+
+from projects.models import Category, User,Project
 from users.models import User
 # Create your models here.
+from resources.models import Resource
+class Category(models.Model):
+    name = models.CharField()
+
 class Project(models.Model):
+    class Status(models.TextChoices):
+        PLANNING = 'PLANNING','planning'
+        ACTIVE = 'ACTIVE','active'
+        ON_HOLD = 'ON_HOLD','on hold'
+        COMPLETED = 'COMPLETED','completed'
+        ARCHIVED = 'ARCHIVED','archived'
+
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project')
-    contributors = models.ManyToManyField(User, on_delete=models.CASCADE)
+    contributors = models.ManyToManyField(User,related_name='contributed_project')
     technologies = models.CharField(max_length=150)
-    bugs = models.ForeignKey(Bugs, on_delete=models.CASCADE,related_name='bugs')
-    upvotes = models.ManyToManyField(User,on_delete=models.CASCADE)
-    title = models.CharField(max_length=150)
+    bugs = models.ForeignKey(Project, on_delete=models.CASCADE,related_name='project')
+    upvotes = models.ManyToManyField(User,null=True,)
+    title = models.CharField(max_length=150)    
     description = models.TextField(max_length=300)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    category = models.CharField(max_length=120)
+    category = models.ForeignKey(Category,on_delete=models.CASCADE)
+    resource = models.ManyToManyField(Resource, blank=True, related_name="resource_project")
+    is_public = models.BooleanField(default=True)
+    start_date = models.DateField(auto_now_add=True)
+    due_date = models.DateField(auto_now=True)
+    status = models.CharField(max_length=21,choices=Status.choices, default=Status.PLANNING)
 
     def __str__(self):
         return self.title
     
-class Category(models.Model):
-    name = models.CharField(max_length=120)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
-class Tags(models.Model):
+class Tag(models.Model):
     name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=150)

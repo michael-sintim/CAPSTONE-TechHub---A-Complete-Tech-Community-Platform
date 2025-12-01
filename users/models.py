@@ -1,16 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import User
+from projects.models import Project
 
 # Create your models here.
+
+class Skill(models.Model):
+    name = models.CharField(max_length=150)
+
+class Post(models.Model):
+    name = models.CharField(max_length=150)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_post')
+
+
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name = 'profile')
-    projects = models.ForeignKey(Project, on_delete="profile")
-    skills = models.ManyToManyField(Skills, on_delete="profile")
-    following = models.ManyToManyField(following, on_delete="profile")
-    post = models.ForeignKey(Post,on_delete='profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name = 'user_profile')
+    skills = models.ManyToManyField(Skill, related_name="skills_profile")
+    following = models.ManyToManyField('self',symmetrical=False,blank=True, related_name='following_profile')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    urls = models.URLField(max_length=300)
 
     def __str__(self):
-        return self.user 
+        return self.user.username
