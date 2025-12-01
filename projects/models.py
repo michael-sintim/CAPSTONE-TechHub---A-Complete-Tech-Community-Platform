@@ -1,11 +1,10 @@
 from django.db import models
-
-from projects.models import Category, User,Project
-from users.models import User
+from django.contrib.auth.models import User
 # Create your models here.
 from resources.models import Resource
+
 class Category(models.Model):
-    name = models.CharField()
+    name = models.CharField(max_length=130)
 
 class Project(models.Model):
     class Status(models.TextChoices):
@@ -19,8 +18,7 @@ class Project(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project')
     contributors = models.ManyToManyField(User,related_name='contributed_project')
     technologies = models.CharField(max_length=150)
-    bugs = models.ForeignKey(Project, on_delete=models.CASCADE,related_name='project')
-    upvotes = models.ManyToManyField(User,null=True,)
+    upvotes = models.ManyToManyField(User,related_name='upvotes_project')
     title = models.CharField(max_length=150)    
     description = models.TextField(max_length=300)
     created_at = models.DateTimeField(auto_now_add=True)

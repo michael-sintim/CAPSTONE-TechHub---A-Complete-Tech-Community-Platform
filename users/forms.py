@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm,UserChangeForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import re
@@ -96,6 +96,7 @@ class Registration(UserCreationForm):
             raise ValidationError("This email already exists ")
 
         return email
+    
     def clean(self):
         return super().clean()
 
@@ -111,3 +112,42 @@ class Login(AuthenticationForm):
         'placeholder':"Enter your Password"
     })
             )
+
+
+class ProfileEdit(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ['username','first_name','last_name','email']
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'placeholder':'Enter your username',
+                'autofocus':True
+            }),
+            'first_name':forms.TextInput(attrs={
+                'placeholder':"Enter your first name"
+            }),
+            
+            'last_name':forms.TextInput(attrs={
+                'placeholder':"Enter your last name"
+            }),
+            'email': forms.EmailInput(attrs={
+                "placeholder":"Enter your email",
+                'autocomplete':True
+            })
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username','').strip()
+        if not username: raise ValidationError("username required")
+        if User.objects.filter(username=username).exclude(id=self.instance.id).exists():
+            raise ValidationError("This username already exists")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email','').strip()
+        if not email: raise ValidationError("email required")
+        if User.objects.filter(email=email).exclude(id=self.instance.id).exists():
+            raise ValidationError("This username already exists")
+        return email
+
+        
