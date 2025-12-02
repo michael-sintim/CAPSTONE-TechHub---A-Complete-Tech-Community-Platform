@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm,UserC
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import re
+from bugs.models import Bug
 class Registration(UserCreationForm):
     username = forms.CharField(required=True,widget=forms.TextInput(attrs={
         'placeholder':'Enter your username',
@@ -67,7 +68,7 @@ class Registration(UserCreationForm):
 
         if not username:
             raise ValidationError('Username required')
-        
+          
         if len(username) < 2 :
             raise ValidationError("Username has to be more than 2 characters")
         
@@ -150,4 +151,20 @@ class ProfileEdit(UserChangeForm):
             raise ValidationError("This username already exists")
         return email
 
-        
+class BugForm(forms.ModelForm):
+    class Meta: 
+        model = Bug
+        fields = ['title','project','priority','description','file_attachment']
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder':'Title','autofocus':True}),
+            'description': forms.Textarea(attrs={'placeholder':'Describe the steps to reproduce the bug...','rows':5}),
+        }
+
+    def clean_file_attachment(self):
+        file_attachment = self.cleaned_data.get('file_attachment')
+        max_upload = 2147483648
+
+        if not file_attachment:
+            raise ValidationError("File does not exist")
+        if file_attachment.size> max_upload:
+            raise ValidationError("This file is to Huge. Must be less than 2GB")

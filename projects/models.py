@@ -14,7 +14,6 @@ class Project(models.Model):
         COMPLETED = 'COMPLETED','completed'
         ARCHIVED = 'ARCHIVED','archived'
 
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project')
     contributors = models.ManyToManyField(User,related_name='contributed_project')
     technologies = models.CharField(max_length=150)
@@ -27,7 +26,7 @@ class Project(models.Model):
     resource = models.ManyToManyField(Resource, blank=True, related_name="resource_project")
     is_public = models.BooleanField(default=True)
     start_date = models.DateField(auto_now_add=True)
-    due_date = models.DateField(auto_now=True)
+    due_date = models.DateField(null=True,blank=True)
     status = models.CharField(max_length=21,choices=Status.choices, default=Status.PLANNING)
 
     def __str__(self):
