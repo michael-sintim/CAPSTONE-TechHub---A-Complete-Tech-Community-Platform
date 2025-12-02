@@ -10,6 +10,7 @@ from ckeditor.widgets import CKEditorWidget
 from django.forms import inlineformset_factory
 from django.db.models import Q
 from django.core.validators import validate_email
+from projects.models import Category
 
 class Registration(UserCreationForm):
     username = forms.CharField(required=True,widget=forms.TextInput(attrs={
@@ -225,6 +226,6 @@ ProjectImageFormSet = inlineformset_factory(
 
 
 class ProjectSearchForm(forms.Form):
-    search = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Search projects...'})) 
-    category = forms.ModelChoiceField(required=False, queryset=Project.objects.all())
-    status = forms.ChoiceField(required=False,choices=[(''+'All Status')]+Project.Status.choices)
+    q = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Search projects...'})) 
+    category = forms.ModelChoiceField(required=False, queryset=Category.objects.all())
+    status = forms.ChoiceField(required=False,choices=[('','All Status')]+Project.Status.choices)
