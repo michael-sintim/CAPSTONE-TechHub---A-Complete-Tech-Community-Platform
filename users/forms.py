@@ -4,6 +4,13 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import re
 from bugs.models import Bug
+from discussions.models import Discussion
+from projects.models import Project, ProjectImage
+from ckeditor.widgets import CKEditorWidget
+from django.forms import inlineformset_factory
+from django.db.models import Q
+from django.core.validators import validate_email
+
 class Registration(UserCreationForm):
     username = forms.CharField(required=True,widget=forms.TextInput(attrs={
         'placeholder':'Enter your username',
@@ -58,7 +65,7 @@ class Registration(UserCreationForm):
             raise ValidationError("last name has to be more than 2 characters")
         
         
-        if not re.match(r"^[a-zA-Z]+$",last_name):
+        if not re.match(r"^[a-zA-Z\s\-']+$",last_name):
             raise ValidationError("Invalid input")
         
         return last_name
@@ -72,14 +79,14 @@ class Registration(UserCreationForm):
         if len(username) < 2 :
             raise ValidationError("Username has to be more than 2 characters")
         
-        if not re.match(r"^[a-zA-Z0-9.\-_]"):
+        if not re.match(r"^[a-zA-Z0-9.\-_]+$"):
             raise ValidationError("Invalid Email")
         
         u_name = ['hero','root','admin','administrator','admin123']
         if username in u_name:
             raise ValidationError("Forbidden username")
         
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(Q(username=username)| Q(email=username)).exists():
             raise ValidationError("This username already exists")
         
         return username
@@ -165,6 +172,59 @@ class BugForm(forms.ModelForm):
         max_upload = 2147483648
 
         if not file_attachment:
-            raise ValidationError("File does not exist")
+            return None
         if file_attachment.size> max_upload:
             raise ValidationError("This file is to Huge. Must be less than 2GB")
+        
+        return file_attachment
+        
+class DiscussionForm(forms.ModelForm):
+    content = forms.CharField(widget=CKEditorWidget())
+
+    class Meta:
+        model= Discussion
+        fields = ['title','content','category','tags']
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder':'Enter a title'}),
+            'tags': forms.CheckboxSelectMultiple()
+        }
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title','').strip()
+
+        if len(title) <3 :
+            raise ValidationError("Title has to be more than 3 characters")
+        return title
+    
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['title','category','status','technologies','description','resource','due_date','is_public']
+        widgets = {
+            'title' : forms.TextInput(attrs={
+                'placeholder':"Enter a title"
+            }),
+            'description': forms.Textarea(attrs={
+                "placeholder": "Describe Your project",'rows':4
+            }),
+            'technologies': forms.CheckboxSelectMultiple(),
+            'resource' : forms.CheckboxSelectMultiple(),
+            'due_date' : forms.DateInput(attrs={
+                'type': 'date'
+            })
+        }
+
+class ProjectImageForm(forms.ModelForm):
+    class Meta:
+        model = ProjectImage
+        fields = ['image']
+
+ProjectImageFormSet = inlineformset_factory(
+        Project,ProjectImage, form = ProjectImageForm, extra=3,can_delete=True
+    )
+
+
+class ProjectSearchForm(forms.Form):
+    search = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Search projects...'})) 
+    category = forms.ModelChoiceField(required=False, queryset=Project.objects.all())
+    status = forms.ChoiceField(required=False,choices=[(''+'All Status')]+Project.Status.choices)

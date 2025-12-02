@@ -1,11 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
 # Create your models here.
-from resources.models import Resource
 
 class Category(models.Model):
     name = models.CharField(max_length=130)
 
+    def __str__(self):
+        return self.name
+
+class Tag(models.Model):
+    name = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=150)
+
+    def __str__(self):
+        return self.name
+    
 class Project(models.Model):
     class Status(models.TextChoices):
         PLANNING = 'PLANNING','planning'
@@ -14,16 +23,16 @@ class Project(models.Model):
         COMPLETED = 'COMPLETED','completed'
         ARCHIVED = 'ARCHIVED','archived'
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project')
-    contributors = models.ManyToManyField(User,related_name='contributed_project')
-    technologies = models.CharField(max_length=150)
-    upvotes = models.ManyToManyField(User,related_name='upvotes_project')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_projects')
+    contributors = models.ManyToManyField(User,related_name='contributed_projects',blank=True)
+    technologies = models.ManyToManyField(Tag,blank=True)
+    upvotes = models.ManyToManyField(User,related_name='upvotes_projects',blank=True)
     title = models.CharField(max_length=150)    
-    description = models.TextField(max_length=300)
+    description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    category = models.ForeignKey(Category,on_delete=models.CASCADE)
-    resource = models.ManyToManyField(Resource, blank=True, related_name="resource_project")
+    category = models.ForeignKey(Category,on_delete=models.CASCADE,related_name='cateogory_projects')
+    resource = models.ManyToManyField('resources.Resource', blank=True, related_name="resource_projects")
     is_public = models.BooleanField(default=True)
     start_date = models.DateField(auto_now_add=True)
     due_date = models.DateField(null=True,blank=True)
@@ -32,8 +41,12 @@ class Project(models.Model):
     def __str__(self):
         return self.title
     
+class ProjectImage(models.Model):
+    project= models.ForeignKey(Project, on_delete=models.CASCADE, related_name="projectImage")
+    image = models.ImageField(upload_to='project_gallery/')
 
+    def __str__(self):
+        return f"Image for {self.project.technologies}"
+    
+    
 
-class Tag(models.Model):
-    name = models.CharField(max_length=150)
-    slug = models.SlugField(max_length=150)
