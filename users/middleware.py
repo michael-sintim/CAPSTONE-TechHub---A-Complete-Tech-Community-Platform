@@ -1,11 +1,4 @@
-import logging
-
-logger= logging.getLogger(__name__)
-handler = logging.StreamHandler()
-formatter =  logging.Formatter(fmt="%(asctime)s %(levelname)s; %(message)s")
-handler.formatter = formatter
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
+from django.utils import timezone
 
 class LoggingMiddleware:
     def __init__(self,get_response):
@@ -14,9 +7,18 @@ class LoggingMiddleware:
     def __call__(self,request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
+        if request.user.is_authenticated:
 
-        response = self.get_response(request)
+            current_time = timezone.now()
+            response = self.get_response(request)
         
         # Code to be executed for each request/response after
         # the view is called.
         return response
+    
+
+
+def square_numbers(a,b):
+     a **  b
+
+print(square_numbers(3,2))
