@@ -228,4 +228,4 @@ class ProjectSearchForm(forms.Form):
     q = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Search projects...'})) 
     category = forms.ModelChoiceField(required=False, queryset=Category.objects.all())
     status = forms.ChoiceField(required=False,choices=[('','All Status')]+Project.Status.choices)
-     
+    
