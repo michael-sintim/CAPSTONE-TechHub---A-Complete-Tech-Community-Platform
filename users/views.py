@@ -9,6 +9,7 @@ from .models import User
 from django.utils.encoding import force_bytes
 from django.utils.http  import urlsafe_base64_encode
 from django.core.mail import EmailMessage
+from django.contrib.auth import login as auth_login
 # Create your views here.
 
 def register(request):
@@ -38,3 +39,17 @@ def register(request):
             form = Registration()
 
     return render(request, 'Registration.html',{'form':form})
+
+
+def login_view(request):
+    if request.method == "POST":
+          form = Login(request,data=request.POST)
+          if form.is_valid():
+               user= form.get_user()
+               auth_login(request,user)
+               if 'next'  in request.POST:
+                   return redirect(request.POST.get('next'))
+               return redirect('dashboard')
+    else:
+         form = Login()
+    return render(request,'login.html',{'form':form})
