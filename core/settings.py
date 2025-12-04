@@ -47,8 +47,10 @@ INSTALLED_APPS = [
     'resources',
     'projects',
     'users',
+    #thiird party apps
     'ckeditor',
-    'ckeditor_uploader'
+    'ckeditor_uploader',
+    'django_bleach',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +138,22 @@ CKEDITOR_UPLOAD_PATH = 'uploads/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+BLEACH_ALLOWED_TAGS = [
+    'b', 'i', 'u', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br', 'img', 'code', 'pre',  # For code snippets
+       'blockquote',   # For quotes
+       'h3', 'h4'      # Maybe subheadings?
+]
+
+BLEACH_ALLOWED_ATTRIBUTES = {
+    'a': ['href', 'title','rel', 'target'],
+    'img': ['src', 'alt'],
+}
+BLEACH_ALLOWED_STYLES = []
+BLEACH_STRIP_TAGS =True
+BLEACH_STRIP_COMMENTS =True
+BLEACH_ALLOWED_PROTOCOLS = ['http', 'https', 'mailto']  
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
