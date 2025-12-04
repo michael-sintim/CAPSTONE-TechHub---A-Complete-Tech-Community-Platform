@@ -7,9 +7,9 @@ from django.template.loader import render_to_string
 from .tokens import account_token_generator
 from .models import User
 from django.utils.encoding import force_bytes
-from django.utils.http  import urlsafe_base64_encode
+from django.utils.http  import urlsafe_base64_encode,urlsafe_base64_decode
 from django.core.mail import EmailMessage
-from django.contrib.auth import login as auth_login
+from django.contrib.auth import login as auth_login, get_user_model
 # Create your views here.
 
 def register(request):
@@ -53,3 +53,7 @@ def login_view(request):
     else:
          form = Login()
     return render(request,'login.html',{'form':form})
+
+def activate(request,uidb64,token):
+     User = get_user_model()
+    
