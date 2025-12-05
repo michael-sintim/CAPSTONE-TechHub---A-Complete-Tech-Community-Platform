@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import Registration,Login,ProfileForm,ProfileEdit
+from .forms import Registration,Login,ProfileForm,ProfileEdit,ProjectSearchForm
 from django.contrib import messages
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -14,8 +14,11 @@ from django.views.generic import ListView,DetailView,DeleteView,CreateView,Updat
 from users.models import Profile
 from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from projects.models import Project
+from django.urls import reverse_lazy
 from discussions.models import Discussion
 from bugs.models import Bug
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 # Create your views here.
 
 def register_view(request):
@@ -118,37 +121,105 @@ class ProjectDetailView(LoginRequiredMixin,DetailView):
     template_name = 'profile.html'
     context_object_name = 'profile'
 
+    def get_object(self):
+        #get the user profile 
+        return self.request.user.project
+    
+    def get_queryset(self):
+        return Project.objects.select_related('user','category').prefetch_related('technologies','images'),
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['open_bugs_count'] =self.object.bugs.filter(status='OPEN').count()
+        context['discussions'] = self.object.discussions.all()[:5]
+        return context
+        
+class ProjectDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
+    model = Project
+    template_name = 'project_delete.html'
+    context_object_name = 'project delete'
+
+    def get_object(self):
+        return self.request.user.project
+    def test_func(self):
+        return self.request.user.project
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request,"Project deleted successfully")
+        return super().delete(request, *args, **kwargs)
+    
 class ProjectListView(LoginRequiredMixin,ListView):
     model = Profile
     template_name = 'project_list.html'
     context_object_name = 'project_list'
     paginate_by = 10
 
-
     def get_queryset(self):
-        return super().get_queryset()
+        queryset = Project.objects.select_related('user','category').prefetch_related('technologies')
+        form = ProjectSearchForm(self.request.GET)
 
+        if form.is_valid():
+            q =  form.cleaned_data.get('q')
+            if q:
+               queryset= queryset.filter(Q(title__icontains=q)| Q(description__icontains=q))
 
+            category = form.cleaned_data.get('category')
+            if category:
+                queryset=queryset.filter(category=category)
+
+            status = form.cleaned_data.get('status')
+            if status:
+                queryset=queryset.filter(category=category)
+
+        return queryset.distinct()
+    
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        context['search_form'] = ProjectSearchForm(self.request.GET)
+        return context
 
 class ProjectUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
     model = Project
     template_name = 'project_update.html'
     context_object_name = 'project_update'
 
+    def test_func(self):
+        project = self.get_object()
+        return self.request.user == project.user or self.request.user.is_superuser
+
 class ProjectCreateView(LoginRequiredMixin,CreateView):
     model = Project
     template_name = 'project_create.html'
     context_object_name = 'project_create'
+    success_url = reverse_lazy('profile_detail')
+
 
 class ProfileDeleteView(LoginRequiredMixin,DeleteView):
     model = Profile
     template_name = 'profile_delete.html'
     context_object_name = 'profile_delete'
+    success_url = reverse_lazy('login')
+
+    def get_object(self):
+        return self.request.user.profile
+    
+    def test_func(self):
+        return self.request.user  == self.get_object().user
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request,'You have successfully deleted your profile')
+        return super().delete(request, *args, **kwargs)
 
 class ProfileCreateView(LoginRequiredMixin,CreateView):
     model = Profile
     template_name = 'profile_create.html'
     context_object_name = 'profile_create.html'
+    form_class = ProfileForm
+    success_url = reverse_lazy('profile_detail')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 class ProfileDetailView(LoginRequiredMixin,DetailView):
     model = Profile
@@ -165,6 +236,20 @@ class CreateBugView(LoginRequiredMixin,CreateView):
     template_name = 'Create_bug.html'
     context_object_name = 'create_bug'
 
+    def dispatch(self, request, *args, **kwargs):
+        self.project  = get_object_or_404(Project,pk=kwargs.get('project_id'))
+        return super().dispatch(request, *args, **kwargs)
+    
+    def form_valid(self, form):
+        self.project = form.instance.project
+        self.request.user = form.instance.reporter
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = self.project
+        return context
+        
 class BugDetailView(LoginRequiredMixin,DetailView):
     model = Bug
     template_name = "bug_detail.html"
@@ -174,6 +259,7 @@ class BugDeleteView(LoginRequiredMixin,DeleteView):
     model = Bug
     template_name = 'bug_delete.html'
     context_object_name = 'bug_delete'
+
 
 class BugListView(LoginRequiredMixin,ListView):
     model = Bug
