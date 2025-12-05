@@ -11,6 +11,7 @@ from django.forms import inlineformset_factory
 from django.db.models import Q
 from django.core.validators import validate_email
 from projects.models import Category
+from users.models import Profile 
 
 class Registration(UserCreationForm):
     username = forms.CharField(required=True,widget=forms.TextInput(attrs={
@@ -228,4 +229,14 @@ class ProjectSearchForm(forms.Form):
     q = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Search projects...'})) 
     category = forms.ModelChoiceField(required=False, queryset=Category.objects.all())
     status = forms.ChoiceField(required=False,choices=[('','All Status')]+Project.Status.choices)
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'avatar', 'urls']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell us about yourself...'}),
+            'urls': forms.URLInput(attrs={'placeholder': 'Portfolio URL'}),
+        }
     
