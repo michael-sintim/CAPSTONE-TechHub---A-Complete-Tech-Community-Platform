@@ -19,6 +19,7 @@ from discussions.models import Discussion
 from bugs.models import Bug
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.db import transaction
 # Create your views here.
 
 def register_view(request):
@@ -92,8 +93,8 @@ def logout_view(request):
     logout(request)
     messages.success(request,"You have been logged out successfully")
     return redirect('login')
-
 @login_required
+@transaction.atomic
 def profile_edit(request):
     user_form = ProfileEdit(request.POST,instance=request.user)
     profile_form = ProfileForm(request.POST,request.FILES,instance=request.user.profile)
