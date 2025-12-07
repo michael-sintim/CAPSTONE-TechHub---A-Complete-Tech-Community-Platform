@@ -5,3 +5,4 @@ from django.urls import resolve
 from django.db.models import F
 from resources.models import Resource
 
+logger = logging.getLogger(__name__)
