@@ -28,3 +28,9 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+
+    class Meta:
+        permissions = [
+            ('can_verify_profile','Can verify user profile')
+        ]

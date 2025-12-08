@@ -13,7 +13,7 @@ from django.core.mail import EmailMessage
 from django.contrib.auth import login as auth_login, get_user_model,logout
 from django.views.generic import ListView,DetailView,DeleteView,CreateView,UpdateView
 from users.models import Profile
-from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin,PermissionRequiredMixin
 from projects.models import Project
 from django.urls import reverse_lazy
 from discussions.models import Discussion
@@ -289,3 +289,7 @@ class DiscussionUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
     model = Discussion
     template_name = 'discussion_update.html'
     context_object_name = 'discussion_update'
+
+class VerifyProfileView(LoginRequiredMixin,PermissionRequiredMixin,CreateView):
+    model = Profile
+    permission_required = 'users.can_verify_profile'
