@@ -106,9 +106,6 @@ class Registration(UserCreationForm):
             raise ValidationError("This email already exists ")
 
         return email
-    
-    def clean(self):
-        return super().clean()
 
 class Login(AuthenticationForm):
     username = forms.CharField(required=True,widget=forms.TextInput(

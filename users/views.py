@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from .forms import Registration,Login,ProfileForm,ProfileEdit,ProjectSearchForm
 from django.contrib import messages
 from django.contrib.sites.shortcuts import get_current_site
@@ -88,11 +89,13 @@ def activate(request,uidb64,token):
             messages.error(request,"Link has expired")
             form = Registration()
             return render(request, 'registration.html',{'form':form})
-        
+
 def logout_view(request):
     logout(request)
     messages.success(request,"You have been logged out successfully")
     return redirect('login')
+
+
 @login_required
 @transaction.atomic
 def profile_edit(request):
