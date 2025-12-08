@@ -15,13 +15,17 @@ class IntensiveMiddleware:
     def __call__(self,request):
         start_time = time.time()
         response = self.get_response(request)
-        duration = time.time()
+        duration = time.time() - start_time
         if duration > 2.0:
             logger.warning(f"⚠️ SLOW REQUEST: {request.path} took {duration:.2f} seconds")
 
         if request.user.is_authenticated:
             Profile.objects.filter(user=request.user).update(last_activity=timezone.now())
-            self.track_source_views(request)
+            
+        self.track_source_views(request)
+
+        return response
+    
 
     def track_source_views(self,request):
         try:
