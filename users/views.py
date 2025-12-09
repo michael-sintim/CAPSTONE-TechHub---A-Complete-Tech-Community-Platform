@@ -121,7 +121,6 @@ def logout_view(request):
     messages.success(request,"You have been logged out successfully")
     return redirect('login')
 
-
 @login_required
 @transaction.atomic
 def profile_edit(request):
