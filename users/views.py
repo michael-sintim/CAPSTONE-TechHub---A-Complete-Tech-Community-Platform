@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .forms import Registration,Login,ProfileForm,ProfileEdit,ProjectSearchForm
+from .forms import Registration,Login,ProfileForm,ProfileEdit,ProjectSearchForm,ProjectForm,ProjectImageFormSet
 from django.contrib import messages
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -68,6 +68,32 @@ def login_view(request):
         form = Login()
     return render(request, 'login.html',{"form":form})
 
+def create_project(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST)
+        formset = ProjectImageFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            project = form.save(commit=False)
+            project.user = request.user
+            project.save()
+            form.save_m2m()
+
+            formset.instance = project
+            formset.save()
+            messages.success(request,"You have created a project successfully")
+            return redirect('project_list')
+            
+        else:
+            form = ProfileForm()
+            formset = ProjectImageFormSet()
+
+            context = {
+                'form':form,
+                'formset':formset
+            }
+
+    return render(request,"create_project.html",context)
 
 def activate(request,uidb64,token):
     User = get_user_model()
