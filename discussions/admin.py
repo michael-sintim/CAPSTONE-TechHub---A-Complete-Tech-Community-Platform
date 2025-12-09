@@ -11,8 +11,9 @@ class DiscussionAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Discussion',{'fields':('author','category','title','content')},
          ),
-         ("Content",{'fields':('content','tags')})
+         ("Content",{'fields':('content','tags')}),
+
          ("Engagement",{'fields':('parent','following', 'voting'),
                         'classes': ('collapse')})
          
-    )
+)

@@ -26,9 +26,9 @@ SECRET_KEY = 'django-insecure-4y6o!&w8vhus3xrnxwr&re2pt5xpkrcko(6va*zkng@1_t!ta9
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['your_droplet_ip', 'your_domain.com']
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG')== 'TRUE'
+DEBUG = False
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
@@ -134,6 +134,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

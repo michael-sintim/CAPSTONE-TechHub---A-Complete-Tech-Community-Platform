@@ -20,10 +20,10 @@ class Bug(models.Model):
     description = models.TextField(max_length=300)
     resolved_at = models.DateTimeField(null=True)
     file_attachment = models.FileField(validators=
-                                       FileExtensionValidator(['pdf','png','jpeg','zip']),blank=True,null=True,upload_to='bug_reports/')
+                                       [FileExtensionValidator('pdf','jpeg','zip')],blank=True,null=True,upload_to='bug_reports/')
     project = models.ForeignKey("projects.Project",on_delete=models.CASCADE,related_name='project_bugs')
     reporter =  models.ForeignKey(User,on_delete=models.CASCADE,related_name='reporter_bugs')
-    assigned_to = models.ForeignKey(User,null=True,blank=True,related_name="assignedTo_bug")
+    assigned_to = models.ForeignKey(User,null=True,blank=True,on_delete=models.CASCADE,related_name="assignedTo_bug")
     status = models.CharField(choices=Status.choices, default=Status.OPEN, max_length=12)
     priority = models.CharField(choices=Priority.choices,default=Priority.LOW,max_length=10)
 
