@@ -33,7 +33,7 @@ DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 # Application definition
-
+d
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
