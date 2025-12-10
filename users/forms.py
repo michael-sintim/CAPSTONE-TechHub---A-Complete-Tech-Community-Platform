@@ -236,4 +236,4 @@ class ProfileForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell us about yourself...'}),
             'urls': forms.URLInput(attrs={'placeholder': 'Portfolio URL'}),
         }
-    #
+    
