@@ -17,6 +17,25 @@ class TimeStampModel(models.Model):
     class Meta:
         abstract = True
 
+
+class ProfileQuerySet(models.QuerySet):
+    def influencer(self):
+        return self.filter(Q(is_active=True)&Q(reputation_score__gt = 500))
+    
+    def skill_hunting(self):
+        return self.filter(Q(skills__name="Django"))
+    
+    def follower_count(self):
+        return self.annotate(follower_count=Count('following')).filter(follower_count__gt = 10)
+    
+class PostQuerySet(models.QuerySet):
+    def get_all_post(self):
+        return self.select_related('user')
+    
+    def content_clean_up(self):
+        return  self.filter(Q(body="")|Q(user__user_profile__is_active=False))
+    
+
 class Post(TimeStampModel):
     title = models.CharField(max_length=150)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_posts')
@@ -24,6 +43,9 @@ class Post(TimeStampModel):
 
     def __str__(self):
         return self.title
+    
+    
+    objects = PostQuerySet.as_manager()
 
 class Profile(TimeStampModel):
     id = models.UUIDField(default=uuid.uuid4,editable=False, primary_key=True)
@@ -42,6 +64,8 @@ class Profile(TimeStampModel):
     def __str__(self):
         return self.user.username
     
+    objects = ProfileQuerySet.as_manager()
+
     class Meta:
         permissions = [
             ('can_verify_profile','Can verify user profile')
@@ -54,21 +78,3 @@ class Profile(TimeStampModel):
             models.Index(fields=['is_active','-created_at']),
             
         ]
-
-class ProfileQuerySet(models.QuerySet):
-    def influencer(self):
-        return self.filter(Q(is_active=True)&Q(reputation_score__gt = 500))
-    
-    def skill_hunting(self):
-        return self.filter(Q(skills__name="Django"))
-    
-    def follower_count(self):
-        return self.annotate(follower_count=Count(Q(following__gt=10)).filter(follower_count__gt = 10))
-    
-class PostQuerySet(models.QuerySet):
-    def get_all_post(self):
-        return self.select_related('user')
-    
-    def content_clean_up(self):
-        return  self.filter(Q(body="")|Q(user__is_active=False))
-    
