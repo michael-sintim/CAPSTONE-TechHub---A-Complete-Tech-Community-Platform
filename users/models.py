@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
+from django.db.models import Q,Count
 
 # Create your models here.
 
@@ -53,3 +54,21 @@ class Profile(TimeStampModel):
             models.Index(fields=['is_active','-created_at']),
             
         ]
+
+class ProfileQuerySet(models.QuerySet):
+    def influencer(self):
+        return self.filter(Q(is_active=True)&Q(reputation_score__gt = 500))
+    
+    def skill_hunting(self):
+        return self.filter(Q(skill__name="Django"))
+    
+    def follower_count(self):
+        return self.annotate(Count(Q(following__gt=10)))
+    
+class PostQuerySet(models.QuerySet):
+    def get_all_post(self):
+        return self.select_related('user')
+    
+    def content_clean_up(self):
+        return  self.filter(Q(body="")|Q(user__is_active=False))
+    
