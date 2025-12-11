@@ -6,7 +6,7 @@ import re
 from bugs.models import Bug
 from discussions.models import Discussion
 from projects.models import Project, ProjectImage
-from ckeditor.widgets import CKEditorWidget
+from django_ckeditor_5.widgets import CKEditor5Widget
 from django.forms import inlineformset_factory
 from django.db.models import Q
 from django.core.validators import validate_email
@@ -178,7 +178,7 @@ class BugForm(forms.ModelForm):
         return file_attachment
         
 class DiscussionForm(forms.ModelForm):
-    content = forms.CharField(widget=CKEditorWidget())
+    content = forms.CharField(widget=CKEditor5Widget())
 
     class Meta:
         model= Discussion

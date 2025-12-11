@@ -48,8 +48,7 @@ INSTALLED_APPS = [
     'projects',
     'users',
     #thiird party apps
-    'ckeditor',
-    'ckeditor_uploader',
+    'django_ckeditor_5',
     'django_bleach',
 ]
 
