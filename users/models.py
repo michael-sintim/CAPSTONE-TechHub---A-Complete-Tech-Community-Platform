@@ -60,10 +60,10 @@ class ProfileQuerySet(models.QuerySet):
         return self.filter(Q(is_active=True)&Q(reputation_score__gt = 500))
     
     def skill_hunting(self):
-        return self.filter(Q(skill__name="Django"))
+        return self.filter(Q(skills__name="Django"))
     
     def follower_count(self):
-        return self.annotate(Count(Q(following__gt=10)))
+        return self.annotate(follower_count=Count(Q(following__gt=10)).filter(follower_count__gt = 10))
     
 class PostQuerySet(models.QuerySet):
     def get_all_post(self):
