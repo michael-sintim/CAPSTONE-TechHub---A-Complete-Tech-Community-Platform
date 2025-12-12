@@ -239,16 +239,6 @@ class ProfileDeleteView(LoginRequiredMixin,DeleteView):
         messages.success(request,'You have successfully deleted your profile')
         return super().delete(request, *args, **kwargs)
 
-class ProfileCreateView(LoginRequiredMixin,CreateView):
-    model = Profile
-    template_name = 'profile_create.html'
-    context_object_name = 'profile_create.html'
-    form_class = ProfileForm
-    success_url = reverse_lazy('profile_detail')
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
 
 class ProfileDetailView(LoginRequiredMixin,DetailView):
     model = Profile

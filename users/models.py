@@ -18,7 +18,7 @@ class TimeStampModel(models.Model):
         abstract = True
 
 
-class ProfileQuerySet(models.QuerySet):
+class ProfileQuerySet(models.QuerySet): 
     def influencer(self):
         return self.filter(Q(is_active=True)&Q(reputation_score__gt = 500))
     
@@ -58,7 +58,7 @@ class Profile(TimeStampModel):
     bio = models.TextField(max_length=500, blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     reputation_score = models.PositiveIntegerField(default=0)
-
+    is_deleted = models.BooleanField(default=False)
 
 
     def __str__(self):
@@ -78,3 +78,12 @@ class Profile(TimeStampModel):
             models.Index(fields=['is_active','-created_at']),
             
         ]
+
+class ActiveManager(models.Manager):
+    def get_queryset(self):
+        return ProfileQuerySet(self.model, using=self._db)
+    
+    def get_all_objects(self):
+        return Profile.objects.filter(is_deleted = False)
+    
+    def create_user_with_profile(username,password):
