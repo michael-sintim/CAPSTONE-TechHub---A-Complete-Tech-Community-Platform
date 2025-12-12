@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
-from django.db.models import Q,Count
+from django.db.models import Q,Count,F
 
 # Create your models here.
 
@@ -16,7 +16,16 @@ class TimeStampModel(models.Model):
 
     class Meta:
         abstract = True
+        
 
+class ActiveManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+    
+    def get_all_objects(self):
+        return self.get_queryset().select_related('user')
+    
+    
 
 class ProfileQuerySet(models.QuerySet): 
     def influencer(self):
@@ -28,18 +37,29 @@ class ProfileQuerySet(models.QuerySet):
     def follower_count(self):
         return self.annotate(follower_count=Count('following')).filter(follower_count__gt = 10)
     
+    
+    def ghosts(self):
+        return self.filter(user__user_posts__isnull=True)
+    
+    def with_stats(self):
+        self.annotate()
+    
 class PostQuerySet(models.QuerySet):
     def get_all_post(self):
         return self.select_related('user')
     
     def content_clean_up(self):
         return  self.filter(Q(body="")|Q(user__user_profile__is_active=False))
+
+    def like_post(self):
+        return self.update(like =F('like')+1 )
     
 
 class Post(TimeStampModel):
     title = models.CharField(max_length=150)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_posts')
     body =models.TextField(blank=True)
+    like = models.PositiveIntegerField()
 
     def __str__(self):
         return self.title
@@ -64,7 +84,12 @@ class Profile(TimeStampModel):
     def __str__(self):
         return self.user.username
     
-    objects = ProfileQuerySet.as_manager()
+
+    all_objects = models.Manager()
+    
+    objects = ActiveManager()
+    filters = ProfileQuerySet.as_manager()
+
 
     class Meta:
         permissions = [
@@ -76,14 +101,4 @@ class Profile(TimeStampModel):
         verbose_name_plural = "Profiles"
         indexes = [
             models.Index(fields=['is_active','-created_at']),
-            
         ]
-
-class ActiveManager(models.Manager):
-    def get_queryset(self):
-        return ProfileQuerySet(self.model, using=self._db)
-    
-    def get_all_objects(self):
-        return Profile.objects.filter(is_deleted = False)
-    
-    def create_user_with_profile(username,password):
